@@ -1,0 +1,11 @@
+{
+    "name": "loop",
+    "description": "Функция loop() выполняется постоянно после setup()",
+    "code_content": "Serial.println(\"Hello from Arduino Block Editor!\");",
+    "pos_x": 50.0,
+    "pos_y": 550.0,
+    "block_type": "loop",
+    "color": "#ff0000",
+    "width": 300,
+    "height": 250
+}

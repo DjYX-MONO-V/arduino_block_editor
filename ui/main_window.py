@@ -934,16 +934,17 @@ class MainWindow(QMainWindow):
             self.terminal_viewer.append_output("Ошибка: Компилятор не найден. Убедитесь, что путь ведет к папке с Arduino IDE.", color="#FF0000")
             return
 
-        code = self.code_viewer.toPlainText()
+        generated_files = generate_arduino_code(self.current_project, "sketch")
         temp_dir = tempfile.mkdtemp()
-        sketch_name = "temp_sketch"
+        sketch_name = "sketch"
         sketch_dir = os.path.join(temp_dir, sketch_name)
         os.makedirs(sketch_dir)
-        sketch_path = os.path.join(sketch_dir, f"{sketch_name}.ino")
 
         try:
-            with open(sketch_path, 'w', encoding='utf-8') as f:
-                f.write(code)
+            for fname, content in generated_files.items():
+                fpath = os.path.join(sketch_dir, fname)
+                with open(fpath, 'w', encoding='utf-8') as f:
+                    f.write(content)
 
             # Подготовка команды (по умолчанию для Arduino Uno)
             selected_fqbn = self.settings_manager.get_setting("selected_board_fqbn")
@@ -988,16 +989,18 @@ class MainWindow(QMainWindow):
 
         cli_executable = self._find_arduino_cli_executable()
         if not cli_executable: return
-        code = self.code_viewer.toPlainText()
+        
+        generated_files = generate_arduino_code(self.current_project)
         temp_dir = tempfile.mkdtemp()
-        sketch_name = "temp_sketch"
+        sketch_name = "sketch"
         sketch_dir = os.path.join(temp_dir, sketch_name)
         os.makedirs(sketch_dir)
-        sketch_path = os.path.join(sketch_dir, f"{sketch_name}.ino")
 
         try:
-            with open(sketch_path, 'w', encoding='utf-8') as f:
-                f.write(code)
+            for fname, content in generated_files.items():
+                fpath = os.path.join(sketch_dir, fname)
+                with open(fpath, 'w', encoding='utf-8') as f:
+                    f.write(content)
 
             self.terminal_viewer.append_output("Шаг 1: Компиляция перед загрузкой...", color="#FFFF00")
             
@@ -1304,9 +1307,26 @@ class MainWindow(QMainWindow):
         file_name, _ = QFileDialog.getSaveFileName(self, "Сохранить проект", "", "Block Editor Projects (*.json);;All Files (*)")
         if file_name:
             try:
+                # 1. Получаем базовое имя проекта (без расширения) и директорию
+                project_dir = os.path.dirname(file_name)
+                project_base_name = os.path.splitext(os.path.basename(file_name))[0]
+                
+                # 2. Создаем папку для Arduino IDE (с тем же именем, что и JSON)
+                sketch_folder = os.path.join(project_dir, project_base_name)
+                os.makedirs(sketch_folder, exist_ok=True)
+                
+                # 3. Получаем данные и генерируем код для всех файлов
                 self.current_project = self.block_canvas.get_current_project_data()
+                generated_files = generate_arduino_code(self.current_project, project_base_name)
+                
+                # 4. Сохраняем все сгенерированные файлы (.ino, .h, .cpp) в созданную папку
+                for fname, content in generated_files.items():
+                    with open(os.path.join(sketch_folder, fname), 'w', encoding='utf-8') as f:
+                        f.write(content)
+                
+                # 5. Сохраняем JSON файл метаданных нашего редактора рядом с папкой
                 self.current_project.save_to_file(file_name)
-                QMessageBox.information(self, "Сохранить проект", f"Проект '{file_name}' успешно сохранен.")
+                QMessageBox.information(self, "Сохранить проект", f"Проект успешно сохранен!\n\nJSON: {file_name}\nПапка IDE: {sketch_folder}")
             except Exception as e:
                 QMessageBox.critical(self, "Ошибка сохранения", f"Не удалось сохранить проект: {e}")
 
@@ -1441,12 +1461,10 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Ошибка экспорта", f"Произошла ошибка при экспорте: {e}")
 
     def _update_code_viewer(self):
-        # Получаем текущее состояние блоков с канваса
         self.current_project = self.block_canvas.get_current_project_data()
-        # Генерируем код
-        generated_code = generate_arduino_code(self.current_project)
-        # Обновляем текстовое поле
-        self.code_viewer.set_code(generated_code)
+        # Используем "sketch" как имя по умолчанию для совместимости
+        generated_files = generate_arduino_code(self.current_project, "sketch")
+        self.code_viewer.set_code_files(generated_files)
 
     def _auto_format_code(self):
         """Примитивное автоформатирование кода внутри блоков (выравнивание отступов)."""

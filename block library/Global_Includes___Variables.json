@@ -1,0 +1,11 @@
+{
+    "name": "Global Includes & Variables",
+    "description": "Здесь подключаются библиотеки и объявляются глобальные переменные",
+    "code_content": "#include <Arduino.h>\n\n// Ваши глобальные переменные",
+    "pos_x": 50.0,
+    "pos_y": 50.0,
+    "block_type": "global",
+    "color": "#2D2D30",
+    "width": 300,
+    "height": 250
+}

@@ -1,0 +1,11 @@
+{
+    "name": "setup",
+    "description": "Функция setup() выполняется один раз при запуске Arduino",
+    "code_content": "Serial.begin(9600);",
+    "pos_x": 50.0,
+    "pos_y": 300.0,
+    "block_type": "setup",
+    "color": "#aaff7f",
+    "width": 300,
+    "height": 250
+}

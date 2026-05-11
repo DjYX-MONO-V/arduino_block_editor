@@ -1,5 +1,5 @@
 # ui/code_viewer.py
-from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QTextEdit, QFrame, QHBoxLayout, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QPlainTextEdit, QWidget, QTextEdit, QFrame, QHBoxLayout, QLineEdit, QPushButton, QTabWidget
 from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QColor, QTextDocument, QPainter, QTextFormat
 from PyQt5.QtCore import QRegExp, Qt, QRect, QSize
 
@@ -267,16 +267,33 @@ class QCodeEditor(QPlainTextEdit):
             blockNumber += 1
 
 
-class CodeViewer(QCodeEditor):
+class CodeViewer(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setReadOnly(True)
-        self.setFont(QFont("Consolas", 10)) # Моноширинный шрифт для кода
-        self.setStyleSheet("background-color: #1E1E1E; color: #D4D4D4;") # Темная тема
-        # Для CodeViewer можно убрать подсветку текущей строки, так как он ReadOnly
-        self.cursorPositionChanged.disconnect(self.highlightCurrentLine)
-        
-        self.highlighter = ArduinoSyntaxHighlighter(self.document())
+        self.setStyleSheet("""
+            QTabWidget::pane { border: 1px solid #444; background: #1E1E1E; }
+            QTabBar::tab { background: #2D2D2D; color: #888; padding: 5px 10px; border: 1px solid #444; }
+            QTabBar::tab:selected { background: #1E1E1E; color: #D4D4D4; border-bottom: none; }
+        """)
+        self.editors = {} # {filename: QCodeEditor}
 
-    def set_code(self, code: str):
-        self.setPlainText(code)
+    def set_code_files(self, files_dict: dict):
+        # Удаляем лишние вкладки
+        current_files = set(files_dict.keys())
+        existing_files = set(self.editors.keys())
+        
+        for fname in existing_files - current_files:
+            idx = self.indexOf(self.editors[fname])
+            self.removeTab(idx)
+            del self.editors[fname]
+
+        # Обновляем или добавляем новые
+        for fname, content in files_dict.items():
+            if fname not in self.editors:
+                editor = QCodeEditor()
+                editor.setReadOnly(True)
+                editor.highlighter = ArduinoSyntaxHighlighter(editor.document())
+                self.editors[fname] = editor
+                self.addTab(editor, fname)
+            
+            self.editors[fname].setPlainText(content)

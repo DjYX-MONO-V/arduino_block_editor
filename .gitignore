@@ -2,13 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Environments
 .venv/
 venv/
 ENV/
 
-# PyInstaller / Сборка
+# PyInstaller
 build/
 dist/
 *.spec
@@ -16,3 +14,11 @@ dist/
 # IDEs
 .vscode/
 .idea/
+
+# Project specific
+*.log
+arduino_block_editor/library_cache/
+
+# Arduino CLI / Temp
+sketch/
+temp_*/

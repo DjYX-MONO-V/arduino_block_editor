@@ -1,5 +1,6 @@
 # ui/block_widgets.py
-from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsProxyWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QMessageBox, QColorDialog, QMenu, QGraphicsItem, QSplitter
+import os
+from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsProxyWidget, QTextEdit, QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QMessageBox, QColorDialog, QMenu, QGraphicsItem, QSplitter, QLabel
 from PyQt5.QtCore import Qt, QRectF, pyqtSignal, QObject, QPointF
 from PyQt5.QtGui import QBrush, QPen, QColor, QFont
 from core.block_data_models import FunctionBlockData
@@ -39,6 +40,9 @@ class FunctionBlockWidget(QGraphicsRectItem):
 
         self.is_minimized = False
 
+        # Инициализируем атрибуты заранее, чтобы избежать AttributeError до завершения _create_widgets
+        self.full_file_edit = QLineEdit() 
+        self.name_label = QLineEdit()
         self.setRect(0, 0, self.block_data.width, self.block_data.height)
         self.setBrush(QBrush(QColor(self.block_data.color))) # Цвет фона блока
         self.setPen(QPen(QColor("#007ACC"), 2)) # Цвет рамки
@@ -64,7 +68,14 @@ class FunctionBlockWidget(QGraphicsRectItem):
         self.color_btn.setStyleSheet("background-color: #555; color: white; border: none; font-size: 12px; padding: 0px;")
         self.color_btn.clicked.connect(self._change_color)
 
-        # Заголовок блока (имя функции)
+        # Поле для имени файла с расширением (теперь справа)
+        self.full_file_edit = QLineEdit(f"{self.block_data.file_name}{self.block_data.file_ext}")
+        self.full_file_edit.setPlaceholderText("имя_файла.ino")
+        self.full_file_edit.setFixedWidth(120)
+        self.full_file_edit.setStyleSheet("background: #333; color: #888; border: 1px solid #444; font-size: 9px;")
+        self.full_file_edit.textChanged.connect(self._on_file_changed)
+
+        # Поле для имени функции
         self.name_label = QLineEdit(self.block_data.name)
         self.name_label.setFont(QFont("Arial", 10, QFont.Bold))
         # Начальный стиль для name_label, будет обновлен _update_ui_from_data
@@ -79,6 +90,8 @@ class FunctionBlockWidget(QGraphicsRectItem):
 
         header_layout = QHBoxLayout()
         header_layout.addWidget(self.name_label)
+        header_layout.addStretch() # Расталкиваем имя функции и имя файла
+        header_layout.addWidget(self.full_file_edit)
         header_layout.addWidget(self.color_btn)
         header_layout.addWidget(self.save_btn)
         header_layout.addWidget(self.min_btn)
@@ -132,8 +145,22 @@ class FunctionBlockWidget(QGraphicsRectItem):
         # Обновляем размер QGraphicsRectItem, чтобы он соответствовал содержимому
         self.update_size()
 
+    def _on_file_changed(self):
+        full_name = self.full_file_edit.text()
+        if "." in full_name:
+            # Автоматически разделяем имя и расширение при вводе точки
+            name, ext = os.path.splitext(full_name)
+            self.block_data.file_name = name
+            self.block_data.file_ext = ext
+        else:
+            self.block_data.file_name = full_name
+            self.block_data.file_ext = "" # Или можно оставить старое, если расширение не введено
+        self.signals.block_data_changed.emit()
+
     def _update_ui_from_data(self):
         self.name_label.setText(self.block_data.name)
+        if self.full_file_edit:
+            self.full_file_edit.setText(f"{self.block_data.file_name}{self.block_data.file_ext}")
         self.description_editor.setText(self.block_data.description)
         self.code_editor.setPlainText(self.block_data.code_content)
         self.setPos(self.block_data.pos_x, self.block_data.pos_y)

@@ -22,6 +22,7 @@ class BlockCanvas(QGraphicsView):
         self.setSceneRect(-5000, -5000, 10000, 10000)
 
         self.blocks = [] # Список всех блоков на канвасе
+        self.block_counter = 0 # Счетчик для генерации имен новых функций
 
         # Для перетаскивания фона
         self._pan_start_pos = QPointF()
@@ -147,19 +148,31 @@ class BlockCanvas(QGraphicsView):
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
-        add_function_action = menu.addAction("Добавить функцию")
-        # add_variable_action = menu.addAction("Добавить переменную") # Пример
-        # add_if_action = menu.addAction("Добавить If-блок") # Пример
-
+        
+        add_ino = menu.addAction("Добавить блок (.ino)")
+        add_h = menu.addAction("Добавить заголовочный файл (.h)")
+        add_cpp = menu.addAction("Добавить исходный код (.cpp)")
+        add_c = menu.addAction("Добавить C-файл (.c)")
+        
         action = menu.exec_(event.globalPos())
+        
+        scene_pos = self.mapToScene(event.pos())
+        if action == add_ino:
+            self._add_function_block(scene_pos, file_ext=".ino")
+        elif action == add_h:
+            self._add_function_block(scene_pos, name="definitions", file_name="my_lib", file_ext=".h")
+        elif action == add_cpp:
+            self._add_function_block(scene_pos, name="implementation", file_name="my_lib", file_ext=".cpp")
+        elif action == add_c:
+            self._add_function_block(scene_pos, name="logic", file_name="my_lib", file_ext=".c")
 
-        if action == add_function_action:
-            self._add_function_block(self.mapToScene(event.pos()))
-
-    def _add_function_block(self, scene_pos: QPointF, name: str = None, description: str = None, code_content: str = None, block_type: str = "function"):
+    def _add_function_block(self, scene_pos: QPointF, name: str = None, description: str = None, 
+                            code_content: str = None, block_type: str = "function", 
+                            file_name: str = "sketch", file_ext: str = ".ino"):
         # Создаем новую модель данных для блока
         if name is None:
-            name = f"newFunction_{len(self.blocks)}"
+            self.block_counter += 1
+            name = f"newFunction_{self.block_counter}"
         if description is None:
             description = "Описание новой функции"
         if code_content is None:
@@ -171,7 +184,9 @@ class BlockCanvas(QGraphicsView):
             code_content=code_content,
             pos_x=scene_pos.x(),
             pos_y=scene_pos.y(),
-            block_type=block_type
+            block_type=block_type,
+            file_name=file_name,
+            file_ext=file_ext
         )
         # Создаем визуальный виджет блока
         block_widget = FunctionBlockWidget(new_block_data)

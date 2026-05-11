@@ -1,12 +1,15 @@
-# Arduino Block Editor (v0.0.21)
+# Arduino Block Editor (v0.0.22)
 
 **Arduino Block Editor** — это специализированная среда разработки (IDE) для контроллеров Arduino, совмещающая визуальное редактирование блоков и написание кода.
 
 > **Скачать готовую версию (.exe):** [Перейти к релизам](https://github.com/DjYX-MONO-V/arduino_block_editor/releases)
 
+![Arduino Block Editor Screenshot](screenshot_v0.0.22.png)
+
 ## Основные возможности
 * **Визуальный холст:** Drag-and-drop блоков, масштабирование и сетка.
-* **Генератор кода:** Автоматическое преобразование блоков в `.ino` скетч.
+* **Генератор кода:** Автоматическое преобразование блоков в `.ino`, `.h` и `.cpp` файлы.
+* **Совместимость с Arduino IDE:** Проекты сохраняются в структуру папок, которую можно открыть в стандартной среде Arduino.
 * **Редактор кода:** Подсветка синтаксиса, нумерация строк и поиск (Ctrl+F).
 * **Интеграция с Arduino CLI:** Компиляция и прошивка прямо из приложения.
 * **Инструменты:** Продвинутый калькулятор программиста и встроенный PDF-просмотрщик документации.
@@ -17,7 +20,7 @@
 1. Установите Python 3.8+
 2. Склонируйте репозиторий:
    ```bash
-   git clone https://github.com/your-username/arduino_block_editor.git
+   git clone https://github.com/DjYX-MONO-V/arduino_block_editor.git
    ```
 3. Установите зависимости:
    ```bash
@@ -31,7 +34,14 @@
 ## Сборка в EXE
 Для сборки использовался PyInstaller:
 ```bash
-pyinstaller --noconsole --onedir --icon="icon.ico" --name="ArduinoBlockEditor" --paths="libs" --add-data "ui;ui" --add-data "core;core" --add-data "libs;libs" --hidden-import="serial" main.py
+pyinstaller --noconsole --onedir ^
+    --paths "Libs" ^
+    --icon="icon.ico" ^
+    --name="ArduinoBlockEditor" ^
+    --add-data "ui;ui" ^
+    --add-data "core;core" ^
+    --add-data "Libs;Libs" ^
+    main.py
 ```
 
 ## Требования

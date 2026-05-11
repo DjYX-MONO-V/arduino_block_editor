@@ -2,7 +2,7 @@
 import json
 
 class FunctionBlockData:
-    def __init__(self, name: str, description: str, code_content: str, pos_x: float = 0, pos_y: float = 0, block_id: str = None, block_type: str = "function", color: str = "#2D2D30", width: float = 300, height: float = 250):
+    def __init__(self, name: str, description: str, code_content: str, pos_x: float = 0, pos_y: float = 0, block_id: str = None, block_type: str = "function", color: str = "#2D2D30", width: float = 300, height: float = 250, file_name: str = "sketch", file_ext: str = ".ino"):
         self.id = block_id if block_id else self._generate_id()
         self.name = name
         self.description = description
@@ -13,6 +13,8 @@ class FunctionBlockData:
         self.color = color
         self.width = width
         self.height = height
+        self.file_name = file_name
+        self.file_ext = file_ext
         # Можно добавить другие свойства, например, цвет, входные/выходные порты и т.д.
 
     def _generate_id(self):
@@ -30,7 +32,9 @@ class FunctionBlockData:
             "block_type": self.block_type,
             "color": self.color,
             "width": self.width,
-            "height": self.height
+            "height": self.height,
+            "file_name": self.file_name,
+            "file_ext": self.file_ext
         }
 
     @classmethod
@@ -45,7 +49,9 @@ class FunctionBlockData:
             block_type=data.get("block_type", "function"),
             color=data.get("color", "#2D2D30"),
             width=float(data.get("width", 300)),
-            height=float(data.get("height", 250))
+            height=float(data.get("height", 250)),
+            file_name=data.get("file_name", "sketch"),
+            file_ext=data.get("file_ext", ".ino")
         )
 
 class BlockProject:
