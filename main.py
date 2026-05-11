@@ -23,8 +23,8 @@ if libs_path not in sys.path:
 
 # Эта часть нужна только при разработке. При запуске в EXE PyInstaller сам упаковывает зависимости.
 if not getattr(sys, 'frozen', False):
-    # Пытаемся найти локальную папку .venv, если она есть в корне проекта
-    local_venv = os.path.join(os.path.dirname(current_dir), ".venv", "Lib", "site-packages")
+    # Пытаемся найти папку .venv в корневой директории проекта
+    local_venv = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".venv", "Lib", "site-packages")
     if os.path.exists(local_venv) and local_venv not in sys.path:
         sys.path.append(local_venv)
 
